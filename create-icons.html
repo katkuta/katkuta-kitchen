@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generate Katkuta Kitchen Icons</title>
+  <style>
+    body { font-family: sans-serif; padding: 40px; background: #f0f0f0; }
+    h2 { margin-bottom: 16px; }
+    canvas { border-radius: 20%; margin: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+    button { margin-top: 20px; padding: 12px 28px; background: #2d6a4f; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>🐥 Katkuta Kitchen — Icon Generator</h2>
+  <p>Click the button to download both icon files, then place them in your project root.</p>
+  <div id="previews"></div>
+  <button onclick="downloadAll()">⬇️ Download icon-192.png &amp; icon-512.png</button>
+
+  <script>
+    function drawIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width  = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Rounded green background
+      const r = size * 0.22;
+      ctx.fillStyle = '#2d6a4f';
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(size - r, 0);
+      ctx.quadraticCurveTo(size, 0, size, r);
+      ctx.lineTo(size, size - r);
+      ctx.quadraticCurveTo(size, size, size - r, size);
+      ctx.lineTo(r, size);
+      ctx.quadraticCurveTo(0, size, 0, size - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // Emoji chick
+      ctx.font = `${size * 0.58}px serif`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐥', size / 2, size / 2 + size * 0.03);
+
+      return canvas;
+    }
+
+    // Preview
+    [192, 512].forEach(size => {
+      const c = drawIcon(size);
+      c.style.width  = '96px';
+      c.style.height = '96px';
+      document.getElementById('previews').appendChild(c);
+    });
+
+    function downloadAll() {
+      [192, 512].forEach(size => {
+        const c = drawIcon(size);
+        const a = document.createElement('a');
+        a.href     = c.toDataURL('image/png');
+        a.download = `icon-${size}.png`;
+        a.click();
+      });
+    }
+  </script>
+</body>
+</html>
