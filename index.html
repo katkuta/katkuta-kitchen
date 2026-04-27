@@ -6400,6 +6400,8 @@ function saveNotifPrefs() {
   localStorage.setItem('notif_todos',  todos  ? 'true' : 'false');
 }
 
+let _osInitialized = false;
+
 async function initOneSignal(appId) {
   if (typeof OneSignalDeferred === 'undefined') {
     throw new Error('OneSignal SDK not loaded — check your internet connection and reload');
@@ -6407,12 +6409,16 @@ async function initOneSignal(appId) {
   return new Promise((resolve, reject) => {
     OneSignalDeferred.push(async function(OneSignal) {
       try {
-        await OneSignal.init({
-          appId,
-          serviceWorkerPath: '/OneSignalSDKWorker.js',
-          notifyButton: { enable: false },
-          allowLocalhostAsSecureOrigin: true,
-        });
+        if (!_osInitialized) {
+          await OneSignal.init({
+            appId,
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            notifyButton: { enable: false },
+            allowLocalhostAsSecureOrigin: true,
+          });
+          _osInitialized = true;
+        }
+        // Always request permission (safe to call multiple times)
         await OneSignal.Notifications.requestPermission();
         resolve();
       } catch(e) {
