@@ -41,7 +41,15 @@ exports.handler = async (event) => {
     return {
       statusCode: res.status,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        _debug: {
+          status: res.status,
+          url,
+          authHeader: authHeader.substring(0, 20) + '...',
+          isV2,
+        }
+      }),
     };
   } catch (e) {
     return {
