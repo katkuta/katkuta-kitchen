@@ -26,7 +26,7 @@ exports.handler = async (event) => {
       method: isDelete ? 'DELETE' : 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${restKey}`,
+        'Authorization': restKey.startsWith('os_v2_') ? `Key ${restKey}` : `Basic ${restKey}`,
       },
       ...(isDelete ? {} : { body: JSON.stringify({ app_id: appId, ...payload }) }),
     });
