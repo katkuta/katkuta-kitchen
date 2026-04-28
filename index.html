@@ -6406,6 +6406,16 @@ async function initOneSignal(appId) {
   if (typeof OneSignalDeferred === 'undefined') {
     throw new Error('OneSignal SDK not loaded — check your internet connection and reload');
   }
+
+  // Register service worker explicitly first so OneSignal can find it
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('/OneSignalSDKWorker.js', { scope: '/' });
+    } catch(e) {
+      console.warn('SW registration failed:', e.message);
+    }
+  }
+
   return new Promise((resolve, reject) => {
     OneSignalDeferred.push(async function(OneSignal) {
       try {
@@ -6413,6 +6423,7 @@ async function initOneSignal(appId) {
           await OneSignal.init({
             appId,
             serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/' },
             notifyButton: { enable: false },
             allowLocalhostAsSecureOrigin: true,
           });
@@ -6422,7 +6433,16 @@ async function initOneSignal(appId) {
         await OneSignal.Notifications.requestPermission();
         resolve();
       } catch(e) {
-        reject(e);
+        // If already initialized, just request permission
+        if (e.message?.includes('already initialized')) {
+          _osInitialized = true;
+          try {
+            await OneSignal.Notifications.requestPermission();
+            resolve();
+          } catch(e2) { reject(e2); }
+        } else {
+          reject(e);
+        }
       }
     });
   });
