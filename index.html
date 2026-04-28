@@ -6421,7 +6421,7 @@ async function initOneSignal(appId) {
   // Register service worker explicitly first so OneSignal can find it
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('/OneSignalSDKWorker.js', { scope: '/' });
+      await navigator.serviceWorker.register('/OneSignalSDKWorker.js');
     } catch(e) {
       console.warn('SW registration failed:', e.message);
     }
@@ -6435,10 +6435,7 @@ async function initOneSignal(appId) {
           await OneSignal.init({
             appId,
             ...(safariId ? { safari_web_id: safariId } : {}),
-            serviceWorkerPath: '/OneSignalSDKWorker.js',
-            serviceWorkerParam: { scope: '/' },
             notifyButton: { enable: false },
-            allowLocalhostAsSecureOrigin: true,
           });
           _osInitialized = true;
         }
