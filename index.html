@@ -2366,12 +2366,6 @@
             oninput="updateNotifStatus()">
         </div>
         <div class="form-group">
-          <label>Safari Web ID <span style="font-weight:400;color:var(--muted);">(for iOS/Safari support)</span></label>
-          <input type="text" id="onesignal-safari-id" placeholder="web.onesignal.auto.xxxxxxxx-…"
-            oninput="updateNotifStatus()">
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Found in your OneSignal Web Configuration code snippet</div>
-        </div>
-        <div class="form-group">
           <label>REST API Key <span style="font-weight:400;color:var(--muted);">(for scheduling reminders)</span></label>
           <div style="display:flex;gap:8px;">
             <input type="password" id="onesignal-rest-key" placeholder="Your REST API key" style="flex:1;"
@@ -5161,7 +5155,11 @@ async function saveTodo() {
     priority: t.priority, created_at: t.createdAt,
   });
   if (error) { console.error(error); syncStatus('error'); toast('⚠️ Sync failed'); }
-  else { syncStatus('ok'); toast(id ? 'To-do updated!' : 'To-do added!'); }
+  else {
+    syncStatus('ok');
+    toast(id ? 'To-do updated!' : 'To-do added!');
+    if (!id) notifyOthers('📋 New task added', t.text + (t.dueDate ? ` — due ${t.dueDate}` : ''));
+  }
 }
 
 async function toggleTodo(id) {
@@ -5259,7 +5257,11 @@ async function saveNote() {
     tags: n.tags || null, created_at: n.createdAt, updated_at: n.updatedAt,
   });
   if (error) { console.error(error); syncStatus('error'); toast('⚠️ Sync failed'); }
-  else { syncStatus('ok'); toast(id ? 'Note updated!' : 'Note saved!'); }
+  else {
+    syncStatus('ok');
+    toast(id ? 'Note updated!' : 'Note saved!');
+    if (!id) notifyOthers('📝 New note added', n.title || 'Untitled note');
+  }
 }
 
 async function deleteNote(id) {
@@ -6276,7 +6278,6 @@ function openSettings() {
   document.getElementById('groq-key-input').value      = localStorage.getItem('groq_api_key')      || '';
   document.getElementById('pexels-key-input').value    = localStorage.getItem('pexels_api_key')    || '';
   document.getElementById('onesignal-app-id').value    = localStorage.getItem('os_app_id')         || '';
-  document.getElementById('onesignal-safari-id').value = localStorage.getItem('os_safari_id')      || '';
   document.getElementById('onesignal-rest-key').value  = localStorage.getItem('os_rest_key')       || '';
   document.getElementById('notif-events').checked      = localStorage.getItem('notif_events') !== 'false';
   document.getElementById('notif-todos').checked       = localStorage.getItem('notif_todos')  !== 'false';
@@ -6373,14 +6374,12 @@ function toggleOSKeyVisibility() {
 }
 
 async function saveAndEnableNotifs() {
-  const appId    = document.getElementById('onesignal-app-id').value.trim();
-  const rest     = document.getElementById('onesignal-rest-key').value.trim();
-  const safariId = document.getElementById('onesignal-safari-id').value.trim();
+  const appId = document.getElementById('onesignal-app-id').value.trim();
+  const rest  = document.getElementById('onesignal-rest-key').value.trim();
   if (!appId || !rest) { toast('⚠️ Enter both App ID and REST API Key'); return; }
 
   localStorage.setItem('os_app_id',   appId);
   localStorage.setItem('os_rest_key', rest);
-  if (safariId) localStorage.setItem('os_safari_id', safariId);
 
   const el = document.getElementById('notif-status');
   el.textContent = '⏳ Enabling notifications…'; el.style.color = 'var(--muted)';
@@ -6400,6 +6399,8 @@ async function saveAndEnableNotifs() {
       toast('✅ Notifications enabled!');
       // Now init OneSignal to register the subscription
       await initOneSignal(appId);
+      // Save this device's player ID so we can exclude self when notifying
+      await saveMyPlayerId();
     } else {
       el.textContent = '⚠️ Permission denied — check your browser/iOS settings';
       el.style.color = 'var(--danger)';
@@ -6420,9 +6421,8 @@ function clearNotifSettings() {
   localStorage.removeItem('os_app_id');
   localStorage.removeItem('os_rest_key');
   localStorage.removeItem('os_safari_id');
-  document.getElementById('onesignal-app-id').value    = '';
-  document.getElementById('onesignal-safari-id').value = '';
-  document.getElementById('onesignal-rest-key').value  = '';
+  document.getElementById('onesignal-app-id').value   = '';
+  document.getElementById('onesignal-rest-key').value = '';
   updateNotifStatus();
   toast('Notification settings cleared');
 }
@@ -6576,6 +6576,37 @@ async function cancelOSNotification(notifId) {
   } catch(e) {
     console.warn('cancelOSNotification failed:', e);
   }
+}
+
+// Save this device's OneSignal player ID to localStorage
+async function saveMyPlayerId() {
+  if (typeof OneSignalDeferred === 'undefined') return;
+  await new Promise(resolve => {
+    OneSignalDeferred.push(async OS => {
+      // Wait a moment for subscription to register
+      setTimeout(async () => {
+        const id = OS.User?.PushSubscription?.id;
+        if (id) {
+          localStorage.setItem('os_my_player_id', id);
+          console.log('Player ID saved:', id);
+        }
+        resolve();
+      }, 2000);
+    });
+  });
+}
+
+// Send an immediate notification to everyone EXCEPT this device
+async function notifyOthers(title, message) {
+  if (!localStorage.getItem('os_app_id')) return;
+  const myId = localStorage.getItem('os_my_player_id');
+  const payload = {
+    included_segments: ['All'],
+    headings:  { en: title },
+    contents:  { en: message },
+    ...(myId ? { excluded_subscription_ids: [myId] } : {}),
+  };
+  try { await osApiCall(payload); } catch(e) { console.warn('notifyOthers failed:', e); }
 }
 
 // Schedule a day-before reminder for an event (at 9 am local time)
