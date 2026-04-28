@@ -6373,24 +6373,24 @@ function toggleOSKeyVisibility() {
 }
 
 async function saveAndEnableNotifs() {
-  const appId = document.getElementById('onesignal-app-id').value.trim();
-  const rest  = document.getElementById('onesignal-rest-key').value.trim();
+  const appId    = document.getElementById('onesignal-app-id').value.trim();
+  const rest     = document.getElementById('onesignal-rest-key').value.trim();
+  const safariId = document.getElementById('onesignal-safari-id').value.trim();
   if (!appId || !rest) { toast('⚠️ Enter both App ID and REST API Key'); return; }
 
-  const safariId = document.getElementById('onesignal-safari-id').value.trim();
-  localStorage.setItem('os_app_id',    appId);
-  localStorage.setItem('os_rest_key',  rest);
+  localStorage.setItem('os_app_id',   appId);
+  localStorage.setItem('os_rest_key', rest);
   if (safariId) localStorage.setItem('os_safari_id', safariId);
-  updateNotifStatus();
 
-  // Init / re-init OneSignal with the saved App ID
-  try {
-    await initOneSignal(appId);
-    toast('✅ Notifications enabled! Check your browser permission prompt.');
-  } catch(e) {
-    toast('⚠️ Could not init OneSignal: ' + e.message);
-    console.error(e);
+  // Unregister old service workers so OneSignal starts fresh
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
   }
+
+  toast('✅ Settings saved — reloading to enable notifications…');
+  closeSettings();
+  setTimeout(() => location.reload(), 1200);
 }
 
 function clearNotifSettings() {
