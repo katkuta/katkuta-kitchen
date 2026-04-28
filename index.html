@@ -2366,6 +2366,12 @@
             oninput="updateNotifStatus()">
         </div>
         <div class="form-group">
+          <label>Safari Web ID <span style="font-weight:400;color:var(--muted);">(for iOS/Safari support)</span></label>
+          <input type="text" id="onesignal-safari-id" placeholder="web.onesignal.auto.xxxxxxxx-…"
+            oninput="updateNotifStatus()">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Found in your OneSignal Web Configuration code snippet</div>
+        </div>
+        <div class="form-group">
           <label>REST API Key <span style="font-weight:400;color:var(--muted);">(for scheduling reminders)</span></label>
           <div style="display:flex;gap:8px;">
             <input type="password" id="onesignal-rest-key" placeholder="Your REST API key" style="flex:1;"
@@ -6270,6 +6276,7 @@ function openSettings() {
   document.getElementById('groq-key-input').value      = localStorage.getItem('groq_api_key')      || '';
   document.getElementById('pexels-key-input').value    = localStorage.getItem('pexels_api_key')    || '';
   document.getElementById('onesignal-app-id').value    = localStorage.getItem('os_app_id')         || '';
+  document.getElementById('onesignal-safari-id').value = localStorage.getItem('os_safari_id')      || '';
   document.getElementById('onesignal-rest-key').value  = localStorage.getItem('os_rest_key')       || '';
   document.getElementById('notif-events').checked      = localStorage.getItem('notif_events') !== 'false';
   document.getElementById('notif-todos').checked       = localStorage.getItem('notif_todos')  !== 'false';
@@ -6370,8 +6377,10 @@ async function saveAndEnableNotifs() {
   const rest  = document.getElementById('onesignal-rest-key').value.trim();
   if (!appId || !rest) { toast('⚠️ Enter both App ID and REST API Key'); return; }
 
-  localStorage.setItem('os_app_id',   appId);
-  localStorage.setItem('os_rest_key', rest);
+  const safariId = document.getElementById('onesignal-safari-id').value.trim();
+  localStorage.setItem('os_app_id',    appId);
+  localStorage.setItem('os_rest_key',  rest);
+  if (safariId) localStorage.setItem('os_safari_id', safariId);
   updateNotifStatus();
 
   // Init / re-init OneSignal with the saved App ID
@@ -6387,8 +6396,10 @@ async function saveAndEnableNotifs() {
 function clearNotifSettings() {
   localStorage.removeItem('os_app_id');
   localStorage.removeItem('os_rest_key');
-  document.getElementById('onesignal-app-id').value   = '';
-  document.getElementById('onesignal-rest-key').value = '';
+  localStorage.removeItem('os_safari_id');
+  document.getElementById('onesignal-app-id').value    = '';
+  document.getElementById('onesignal-safari-id').value = '';
+  document.getElementById('onesignal-rest-key').value  = '';
   updateNotifStatus();
   toast('Notification settings cleared');
 }
@@ -6420,8 +6431,10 @@ async function initOneSignal(appId) {
     OneSignalDeferred.push(async function(OneSignal) {
       try {
         if (!_osInitialized) {
+          const safariId = localStorage.getItem('os_safari_id');
           await OneSignal.init({
             appId,
+            ...(safariId ? { safari_web_id: safariId } : {}),
             serviceWorkerPath: '/OneSignalSDKWorker.js',
             serviceWorkerParam: { scope: '/' },
             notifyButton: { enable: false },
