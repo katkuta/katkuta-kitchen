@@ -6382,15 +6382,38 @@ async function saveAndEnableNotifs() {
   localStorage.setItem('os_rest_key', rest);
   if (safariId) localStorage.setItem('os_safari_id', safariId);
 
-  // Unregister old service workers so OneSignal starts fresh
+  const el = document.getElementById('notif-status');
+  el.textContent = '⏳ Enabling notifications…'; el.style.color = 'var(--muted)';
+
+  // Register service worker first
   if ('serviceWorker' in navigator) {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(r => r.unregister()));
+    try {
+      await navigator.serviceWorker.register('/OneSignalSDKWorker.js');
+    } catch(e) { console.warn('SW:', e.message); }
   }
 
-  toast('✅ Settings saved — reloading to enable notifications…');
-  closeSettings();
-  setTimeout(() => location.reload(), 1200);
+  // Request permission directly from this user tap (required on iOS)
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      el.textContent = '✅ Notifications enabled!'; el.style.color = '#16a34a';
+      toast('✅ Notifications enabled!');
+      // Now init OneSignal to register the subscription
+      await initOneSignal(appId);
+    } else {
+      el.textContent = '⚠️ Permission denied — check your browser/iOS settings';
+      el.style.color = 'var(--danger)';
+    }
+  } catch(e) {
+    // Fallback: let OneSignal handle the prompt
+    try {
+      await initOneSignal(appId);
+      el.textContent = '✅ Notifications enabled!'; el.style.color = '#16a34a';
+      toast('✅ Notifications enabled!');
+    } catch(e2) {
+      el.textContent = `⚠️ ${e2.message}`; el.style.color = 'var(--danger)';
+    }
+  }
 }
 
 function clearNotifSettings() {
