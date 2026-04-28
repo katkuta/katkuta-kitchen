@@ -6581,18 +6581,28 @@ async function cancelOSNotification(notifId) {
 // Save this device's OneSignal player ID to localStorage
 async function saveMyPlayerId() {
   if (typeof OneSignalDeferred === 'undefined') return;
-  await new Promise(resolve => {
-    OneSignalDeferred.push(async OS => {
-      // Wait a moment for subscription to register
-      setTimeout(async () => {
-        const id = OS.User?.PushSubscription?.id;
-        if (id) {
-          localStorage.setItem('os_my_player_id', id);
-          console.log('Player ID saved:', id);
-        }
-        resolve();
-      }, 2000);
+  OneSignalDeferred.push(OS => {
+    // Listen for subscription changes — fires when ID is assigned
+    OS.User.PushSubscription.addEventListener('change', event => {
+      const id = event.current?.id || event.current?.token;
+      if (id) {
+        localStorage.setItem('os_my_player_id', id);
+        console.log('✅ Player ID saved:', id);
+      }
     });
+    // Also try immediately and with retries
+    const tryGet = (attempts = 0) => {
+      const id = OS.User?.PushSubscription?.id
+              || OS.User?.PushSubscription?.token
+              || OS.User?.onesignalId;
+      if (id) {
+        localStorage.setItem('os_my_player_id', id);
+        console.log('✅ Player ID saved:', id);
+      } else if (attempts < 10) {
+        setTimeout(() => tryGet(attempts + 1), 1000);
+      }
+    };
+    tryGet();
   });
 }
 
