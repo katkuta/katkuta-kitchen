@@ -6483,9 +6483,12 @@ async function sendTestNotif() {
     const payload = {
       contents: { en: '🔔 Katkuta Kitchen — notifications are working!' },
       headings: { en: 'Test Notification' },
-      included_segments: ['All'],
     };
-    if (playerId) payload.include_subscription_ids = [playerId];
+    if (playerId) {
+      payload.include_subscription_ids = [playerId];
+    } else {
+      payload.included_segments = ['All'];
+    }
 
     const data = await osApiCall(payload);
     if (data?.id) {
@@ -6511,7 +6514,7 @@ async function osApiCall(payload, method, notifId) {
   const rest  = localStorage.getItem('os_rest_key');
   if (!appId || !rest) return null;
 
-  const res = await fetch('/.netlify/functions/notify', {
+  const res = await fetch('/api/notify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ appId, restKey: rest, method, notifId, payload }),
