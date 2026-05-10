@@ -3793,6 +3793,7 @@ async function saveLogEntry() {
   await persistLogEntry(newEntry, trackerDate, trackerPersonId);
 }
 async function deleteLogEntry(entryId) {
+  if (!confirm('Remove this log entry?')) return;
   const entries = getEntries(trackerDate, trackerPersonId).filter(e => e.id !== entryId);
   setEntries(trackerDate, trackerPersonId, entries);
   renderTrackerBody();
@@ -5131,6 +5132,7 @@ async function removeShopItem(id) {
 async function clearCheckedItems() {
   const toDelete = shopItems.filter(i => i.checked).map(i => i.id);
   if (!toDelete.length) { toast('No checked items to clear'); return; }
+  if (!confirm(`Remove ${toDelete.length} checked item${toDelete.length > 1 ? 's' : ''}?`)) return;
   shopItems = shopItems.filter(i => !i.checked);
   saveShopLocal();
   renderShoppingList();
@@ -5141,6 +5143,7 @@ async function clearCheckedItems() {
 async function clearAllItems() {
   if (!shopItems.length) return;
   const count = shopItems.length;
+  if (!confirm(`Clear all ${count} item${count > 1 ? 's' : ''} from the shopping list?`)) return;
   const ids   = shopItems.map(i => i.id);
   shopItems   = [];
   shopLoaded  = false;
@@ -5457,6 +5460,7 @@ async function toggleTodo(id) {
 
 async function deleteTodo(id) {
   const t = todos.find(x => x.id === id);
+  if (!confirm(`Delete "${t?.text || 'this to-do'}"?`)) return;
   if (t?.notifId) await cancelOSNotification(t.notifId);
   todos = todos.filter(t => t.id !== id);
   renderTodos();
@@ -5542,6 +5546,8 @@ async function saveNote() {
 }
 
 async function deleteNote(id) {
+  const n = notes.find(x => x.id === id);
+  if (!confirm(`Delete "${n?.title || n?.content?.slice(0,40) || 'this note'}"?`)) return;
   notes = notes.filter(n => n.id !== id);
   closeNoteModal();
   renderNotes();
@@ -5882,6 +5888,7 @@ async function saveEvent() {
 
 async function deleteEvent(id) {
   const ev = calEvents.find(e => e.id === id);
+  if (!confirm(`Delete "${ev?.title || 'this event'}"?`)) return;
   if (ev?.notifId) await cancelOSNotification(ev.notifId);
   calEvents = calEvents.filter(e => e.id !== id);
   closeEventModal();
