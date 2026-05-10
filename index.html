@@ -1779,6 +1779,22 @@
     .feed-who-selector { display: flex; gap: 8px; flex-wrap: wrap; }
     .feed-who-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; font-size: 13px; font-family: inherit; cursor: pointer; transition: all .12s; color: var(--text); }
     .feed-who-btn.on { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); font-weight: 600; }
+    .voice-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 20px;
+      border: 1px solid var(--border); background: none;
+      font-size: 13px; font-family: inherit; cursor: pointer;
+      color: var(--muted); transition: all .15s;
+    }
+    .voice-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+    .voice-btn.recording {
+      background: #fee2e2; border-color: var(--danger); color: var(--danger);
+      animation: pulse-red 1s ease-in-out infinite;
+    }
+    @keyframes pulse-red {
+      0%,100% { opacity: 1; } 50% { opacity: .6; }
+    }
+    .voice-status { font-size: 12px; color: var(--muted); margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -1799,7 +1815,7 @@
       <button class="nav-tab" onclick="showPage('shopping')">Shopping</button>
       <button class="nav-tab" onclick="showPage('notes')">Notes & To-dos</button>
       <button class="nav-tab" onclick="showPage('events')">Events</button>
-      <button class="nav-tab" onclick="showPage('feed')">📸 Feed</button>
+      <button class="nav-tab" onclick="showPage('feed')">Feed</button>
       <button class="nav-tab" onclick="showPage('profiles')">Profiles</button>
       <button class="dark-toggle" onclick="toggleDark()" id="dark-toggle-btn" title="Toggle dark mode">🌙</button>
       <button class="nav-tab nav-settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
@@ -1875,9 +1891,9 @@
       <div class="dash-quick-title">Quick Actions</div>
       <div class="dash-quick-grid">
         <button class="dash-quick-btn" onclick="showPage('recipes'); setTimeout(openAddModal, 80)">+ Add Recipe</button>
+        <button class="dash-quick-btn" onclick="showPage('notes'); setTimeout(openAddTodo, 80)">+ Add To-Do</button>
+        <button class="dash-quick-btn" onclick="showPage('events'); setTimeout(openAddEvent, 80)">+ Add Event</button>
         <button class="dash-quick-btn" onclick="showPage('shopping')">Shopping List</button>
-        <button class="dash-quick-btn" onclick="showPage('notes')">Notes & To-dos</button>
-        <button class="dash-quick-btn" onclick="showPage('events')">Events Calendar</button>
         <button class="dash-quick-btn" onclick="showPage('mealplan')">Meal Plan</button>
       </div>
     </div>
@@ -2114,7 +2130,14 @@
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Posted by</div>
           <div class="feed-who-selector" id="feed-who-selector"></div>
         </div>
-        <textarea id="feed-caption" placeholder="What's on your mind? (required if no photo)"></textarea>
+        <div style="position:relative;">
+          <textarea id="feed-caption" placeholder="What's on your mind? (required if no photo)" style="padding-right:48px;"></textarea>
+          <button type="button" id="voice-record-btn" class="voice-btn"
+                  onclick="toggleVoiceRecord()"
+                  style="position:absolute;right:8px;bottom:8px;padding:6px 10px;font-size:16px;border-radius:50%;width:34px;height:34px;justify-content:center;"
+                  title="Record voice message">🎤</button>
+        </div>
+        <div class="voice-status" id="voice-status" style="display:none;"></div>
         <div>
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Tags</div>
           <div class="feed-tag-selector" id="feed-tag-selector"></div>
@@ -7367,6 +7390,97 @@ async function renderDashOnThisDay() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── VOICE RECORDING (Feed) ────────────────────────────────────────────────────
+let voiceRecorder   = null;
+let voiceChunks     = [];
+let voiceRecording  = false;
+
+async function toggleVoiceRecord() {
+  if (voiceRecording) {
+    stopVoiceRecord();
+  } else {
+    await startVoiceRecord();
+  }
+}
+
+async function startVoiceRecord() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    voiceChunks  = [];
+    voiceRecorder = new MediaRecorder(stream);
+    voiceRecorder.ondataavailable = e => { if (e.data.size > 0) voiceChunks.push(e.data); };
+    voiceRecorder.onstop = handleVoiceStop;
+    voiceRecorder.start();
+    voiceRecording = true;
+
+    const btn = document.getElementById('voice-record-btn');
+    const st  = document.getElementById('voice-status');
+    btn.classList.add('recording');
+    btn.textContent = '⏹';
+    btn.title = 'Stop recording';
+    st.style.display = '';
+    st.textContent = '🔴 Recording… tap ⏹ to stop';
+  } catch(e) {
+    toast('⚠️ Microphone access denied');
+    console.warn('Voice record error:', e);
+  }
+}
+
+function stopVoiceRecord() {
+  if (voiceRecorder && voiceRecorder.state !== 'inactive') {
+    voiceRecorder.stop();
+    voiceRecorder.stream.getTracks().forEach(t => t.stop());
+  }
+  voiceRecording = false;
+  const btn = document.getElementById('voice-record-btn');
+  btn.classList.remove('recording');
+  btn.textContent = '🎤';
+  btn.title = 'Record voice message';
+}
+
+async function handleVoiceStop() {
+  const st = document.getElementById('voice-status');
+  const groqKey = localStorage.getItem('groq_api_key');
+
+  if (!groqKey) {
+    // No Groq key — append note to caption
+    st.textContent = '⚠️ Connect Groq API in ⚙️ Settings to transcribe voice to text';
+    setTimeout(() => { st.style.display = 'none'; }, 4000);
+    return;
+  }
+
+  st.textContent = '⏳ Transcribing…';
+
+  const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+  const formData = new FormData();
+  formData.append('file', blob, 'voice.webm');
+  formData.append('model', 'whisper-large-v3');
+  formData.append('response_format', 'json');
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${groqKey}` },
+      body: formData,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const text = data.text?.trim();
+    if (text) {
+      const caption = document.getElementById('feed-caption');
+      caption.value = caption.value ? caption.value + ' ' + text : text;
+      st.textContent = '✅ Transcribed!';
+      setTimeout(() => { st.style.display = 'none'; }, 2000);
+    } else {
+      st.textContent = '⚠️ Could not transcribe — try again';
+    }
+  } catch(e) {
+    console.error('Transcription error:', e);
+    st.textContent = `❌ Transcription failed: ${e.message}`;
+    setTimeout(() => { st.style.display = 'none'; }, 4000);
+  }
 }
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
