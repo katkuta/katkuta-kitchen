@@ -1922,8 +1922,8 @@
         </div>
         <div class="nt-panel-body">
           <div class="todo-filters" id="todo-filters">
-            <button class="todo-filter-btn active" data-f="all"    onclick="setTodoFilter('all')">All</button>
-            <button class="todo-filter-btn"        data-f="active" onclick="setTodoFilter('active')">Active</button>
+            <button class="todo-filter-btn"        data-f="all"    onclick="setTodoFilter('all')">All</button>
+            <button class="todo-filter-btn active" data-f="active" onclick="setTodoFilter('active')">Active</button>
             <button class="todo-filter-btn"        data-f="done"   onclick="setTodoFilter('done')">Done</button>
           </div>
           <div id="todo-list"></div>
@@ -5047,7 +5047,7 @@ function itemHtml(item) {
 let notes      = [];
 let todos      = [];
 let ntLoaded   = false;
-let todoFilter = 'all';
+let todoFilter = 'active';
 
 async function initNotesPage() {
   if (!ntLoaded) {
