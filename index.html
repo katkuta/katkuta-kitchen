@@ -1740,6 +1740,30 @@
     .feed-compose-status { font-size: 13px; color: var(--muted); flex: 1; }
     .post-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
     .post-card-photo { width: 100%; max-height: 420px; object-fit: cover; display: block; cursor: zoom-in; }
+    .post-photo-grid { display: grid; gap: 2px; }
+    .post-photo-grid.count-1 { grid-template-columns: 1fr; }
+    .post-photo-grid.count-2 { grid-template-columns: 1fr 1fr; }
+    .post-photo-grid.count-3 { grid-template-columns: 1fr 1fr; }
+    .post-photo-grid.count-3 .post-photo-grid-img:first-child { grid-column: span 2; }
+    .post-photo-grid.count-4plus { grid-template-columns: 1fr 1fr; }
+    .post-photo-grid-img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: zoom-in; display: block; }
+    .post-photo-grid.count-1 .post-photo-grid-img { aspect-ratio: unset; max-height: 420px; }
+    /* Compose multi-photo */
+    .feed-photo-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .feed-photo-thumb { position: relative; width: 80px; height: 80px; border-radius: var(--r-sm); overflow: hidden; flex-shrink: 0; }
+    .feed-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .feed-photo-thumb-remove {
+      position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.6); color: #fff;
+      border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;
+    }
+    .feed-add-photo-btn {
+      width: 80px; height: 80px; border: 2px dashed var(--border); border-radius: var(--r-sm);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; background: none; color: var(--muted); font-size: 11px; gap: 4px;
+      font-family: inherit; transition: border-color .15s, color .15s, background .15s; flex-shrink: 0;
+    }
+    .feed-add-photo-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
     .post-card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
     .post-card-header { display: flex; align-items: center; gap: 10px; }
     .post-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
@@ -1813,7 +1837,7 @@
       <button class="nav-tab" onclick="showPage('recipes')">Recipes</button>
       <button class="nav-tab" onclick="showPage('mealplan')">Meal Plan</button>
       <button class="nav-tab" onclick="showPage('shopping')">Shopping</button>
-      <button class="nav-tab" onclick="showPage('notes')">Notes & To-dos</button>
+      <button class="nav-tab" onclick="showPage('notes')">To-dos</button>
       <button class="nav-tab" onclick="showPage('events')">Events</button>
       <button class="nav-tab" onclick="showPage('feed')">Feed</button>
       <button class="nav-tab" onclick="showPage('profiles')">Profiles</button>
@@ -2015,36 +2039,15 @@
   <!-- ── NOTES & TO-DOS ── -->
   <div id="page-notes" class="page">
     <div class="page-header">
-      <h1 class="page-title">Notes & To-dos</h1>
+      <h1 class="page-title">✅ To-dos</h1>
+      <button class="btn btn-primary" onclick="openAddTodo()">+ New</button>
     </div>
-    <div class="nt-layout">
-
-      <!-- TO-DOS panel -->
-      <div class="nt-panel">
-        <div class="nt-panel-head">
-          <div class="nt-panel-title">✅ To-dos</div>
-          <button class="btn btn-secondary" onclick="openAddTodo()" style="min-height:34px;padding:6px 14px;font-size:13px;">+ New</button>
-        </div>
-        <div class="nt-panel-body">
-          <div class="todo-filters" id="todo-filters">
-            <button class="todo-filter-btn"        data-f="all"    onclick="setTodoFilter('all')">All</button>
-            <button class="todo-filter-btn active" data-f="active" onclick="setTodoFilter('active')">Active</button>
-            <button class="todo-filter-btn"        data-f="done"   onclick="setTodoFilter('done')">Done</button>
-          </div>
-          <div id="todo-list"></div>
-        </div>
-      </div>
-
-      <!-- NOTES panel -->
-      <div class="nt-panel">
-        <div class="nt-panel-head">
-          <div class="nt-panel-title">📝 Notes</div>
-          <button class="btn btn-secondary" onclick="openNoteEditor(null)" style="min-height:34px;padding:6px 14px;font-size:13px;">+ New</button>
-        </div>
-        <div class="nt-panel-body" id="notes-list"></div>
-      </div>
-
+    <div class="todo-filters" id="todo-filters" style="margin-bottom:12px;">
+      <button class="todo-filter-btn"        data-f="all"    onclick="setTodoFilter('all')">All</button>
+      <button class="todo-filter-btn active" data-f="active" onclick="setTodoFilter('active')">Active</button>
+      <button class="todo-filter-btn"        data-f="done"   onclick="setTodoFilter('done')">Done</button>
     </div>
+    <div id="todo-list"></div>
   </div>
 
   <!-- ── EVENTS ── -->
@@ -2116,15 +2119,15 @@
     <div class="feed-layout">
       <!-- Compose -->
       <div class="feed-compose">
-        <div class="feed-compose-photo" id="feed-compose-photo">
-          <input type="file" id="feed-photo-input" accept="image/*" onchange="handleFeedPhotoSelect(event)">
-          <div id="feed-compose-placeholder" style="text-align:center;padding:18px;pointer-events:none;">
-            <div style="font-size:30px;margin-bottom:6px;">📷</div>
-            <div style="font-size:14px;color:var(--muted);">Tap to add a photo (optional)</div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Photos (optional)</div>
+          <div class="feed-photo-thumbs" id="feed-photo-thumbs">
+            <button type="button" class="feed-add-photo-btn" onclick="document.getElementById('feed-photo-input').click()">
+              <span style="font-size:22px;">📷</span>
+              <span>Add</span>
+            </button>
           </div>
-          <img id="feed-compose-preview" style="display:none;" alt="">
-          <button type="button" class="feed-compose-remove" id="feed-compose-remove"
-                  style="display:none;" onclick="removeFeedPhoto(event)">✕</button>
+          <input type="file" id="feed-photo-input" accept="image/*" multiple style="display:none;" onchange="handleFeedPhotoSelect(event)">
         </div>
         <div>
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Posted by</div>
@@ -2834,7 +2837,7 @@ let currentPage    = 'recipes';
 // Feed state
 let posts            = [];
 let feedLoaded       = false;
-let feedPostingPhoto = null;
+let feedPostingPhotos = []; // array of data URLs
 let feedSelectedTags = new Set();
 let feedPostingWho   = null; // profileId of poster
 
@@ -2898,23 +2901,30 @@ function dbToLog(d) {
 }
 
 function dbToPost(d) {
+  // photo_url may be a JSON array string (new) or a plain URL (legacy)
+  let photoUrls = [];
+  if (d.photo_url) {
+    try { photoUrls = JSON.parse(d.photo_url); if (!Array.isArray(photoUrls)) photoUrls = [d.photo_url]; }
+    catch { photoUrls = [d.photo_url]; }
+  }
   return {
     id:        d.id,
     createdAt: d.created_at,
     profileId: d.profile_id,
     caption:   d.caption   || '',
-    photoUrl:  d.photo_url || null,
+    photoUrls,
     tags:      d.tags      || [],
     reactions: d.reactions || {},
   };
 }
 function postToDb(p) {
+  const urls = p.photoUrls || [];
   return {
     id:         p.id,
     created_at: p.createdAt,
     profile_id: p.profileId,
     caption:    p.caption  || null,
-    photo_url:  p.photoUrl || null,
+    photo_url:  urls.length ? JSON.stringify(urls) : null,
     tags:       p.tags     || [],
     reactions:  p.reactions || {},
   };
@@ -7210,9 +7220,14 @@ function postCardHtml(p) {
   const profile  = profiles.find(pr => pr.id === p.profileId);
   const avatar   = profile?.avatar || '👤';
   const timeStr  = relativeTime(p.createdAt);
-  const photoHtml = p.photoUrl
-    ? `<img class="post-card-photo" src="${esc(p.photoUrl)}" alt="Memory" loading="lazy"
-            onclick="openPhotoModal('${esc(p.photoUrl)}')">`  : '';
+  const photos = p.photoUrls || [];
+  let photoHtml = '';
+  if (photos.length === 1) {
+    photoHtml = `<img class="post-card-photo" src="${esc(photos[0])}" alt="Memory" loading="lazy" onclick="openPhotoModal('${esc(photos[0])}')")>`;
+  } else if (photos.length > 1) {
+    const cls = photos.length === 2 ? 'count-2' : photos.length === 3 ? 'count-3' : 'count-4plus';
+    photoHtml = `<div class="post-photo-grid ${cls}">${photos.map(u => `<img class="post-photo-grid-img" src="${esc(u)}" alt="Memory" loading="lazy" onclick="openPhotoModal('${esc(u)}')">`).join('')}</div>`;
+  }
   const captionHtml = p.caption ? `<div class="post-caption">${esc(p.caption)}</div>` : '';
   const tagsHtml = p.tags.length
     ? `<div class="post-tags">${p.tags.map(t=>`<span class="post-tag">#${esc(t)}</span>`).join('')}</div>` : '';
@@ -7246,61 +7261,59 @@ function postCardHtml(p) {
 }
 
 function handleFeedPhotoSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { toast('Please select an image file'); return; }
-  resizeImage(file, 1200, 0.85, dataUrl => setFeedPhotoPreview(dataUrl));
+  const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  files.forEach(file => {
+    resizeImage(file, 1200, 0.85, dataUrl => {
+      feedPostingPhotos.push(dataUrl);
+      renderFeedPhotoThumbs();
+    });
+  });
   e.target.value = '';
 }
 
-function setFeedPhotoPreview(dataUrl) {
-  feedPostingPhoto = dataUrl;
-  const placeholder = document.getElementById('feed-compose-placeholder');
-  const preview     = document.getElementById('feed-compose-preview');
-  const removeBtn   = document.getElementById('feed-compose-remove');
-  const area        = document.getElementById('feed-compose-photo');
-  if (dataUrl) {
-    preview.src = dataUrl; preview.style.display = 'block';
-    placeholder.style.display = 'none';
-    removeBtn.style.display = 'flex';
-    area.classList.add('has-img');
-  } else {
-    preview.src = ''; preview.style.display = 'none';
-    placeholder.style.display = '';
-    removeBtn.style.display = 'none';
-    area.classList.remove('has-img');
-  }
+function renderFeedPhotoThumbs() {
+  const container = document.getElementById('feed-photo-thumbs');
+  if (!container) return;
+  const thumbsHtml = feedPostingPhotos.map((url, i) => `
+    <div class="feed-photo-thumb">
+      <img src="${url}" alt="">
+      <button type="button" class="feed-photo-thumb-remove" onclick="removeFeedPhoto(${i})">✕</button>
+    </div>`).join('');
+  container.innerHTML = thumbsHtml + `
+    <button type="button" class="feed-add-photo-btn" onclick="document.getElementById('feed-photo-input').click()">
+      <span style="font-size:22px;">📷</span>
+      <span>Add</span>
+    </button>`;
 }
 
-function removeFeedPhoto(e) {
-  e.stopPropagation();
-  feedPostingPhoto = null;
-  setFeedPhotoPreview(null);
+function removeFeedPhoto(index) {
+  feedPostingPhotos.splice(index, 1);
+  renderFeedPhotoThumbs();
 }
 
 async function addPost() {
   const caption = document.getElementById('feed-caption').value.trim();
-  if (!feedPostingPhoto && !caption) { toast('Add a photo or write a caption first'); return; }
+  if (!feedPostingPhotos.length && !caption) { toast('Add a photo or write a caption first'); return; }
   const statusEl = document.getElementById('feed-compose-status');
-  statusEl.textContent = feedPostingPhoto ? '⏳ Uploading photo…' : '⏳ Posting…';
+  statusEl.textContent = feedPostingPhotos.length ? `⏳ Uploading ${feedPostingPhotos.length} photo${feedPostingPhotos.length > 1 ? 's' : ''}…` : '⏳ Posting…';
 
   const postId = uid();
-  let photoUrl = null;
+  const photoUrls = [];
 
-  if (feedPostingPhoto) {
+  for (let i = 0; i < feedPostingPhotos.length; i++) {
     try {
-      const res  = await fetch(feedPostingPhoto);
+      const res  = await fetch(feedPostingPhotos[i]);
       const blob = await res.blob();
       const ext  = blob.type.includes('png') ? 'png' : 'jpg';
-      const path = `${postId}.${ext}`;
+      const path = `${postId}_${i}.${ext}`;
       const { error: upErr } = await sb.storage.from('memories').upload(path, blob, { contentType: blob.type });
       if (upErr) throw upErr;
       const { data: urlData } = sb.storage.from('memories').getPublicUrl(path);
-      photoUrl = urlData.publicUrl;
+      photoUrls.push(urlData.publicUrl);
     } catch(e) {
       console.error('Photo upload error:', e);
-      statusEl.textContent = '⚠️ Photo upload failed — posting without photo';
-      photoUrl = null;
+      statusEl.textContent = `⚠️ Photo ${i+1} failed — skipping`;
     }
   }
 
@@ -7310,7 +7323,7 @@ async function addPost() {
   const newPost = {
     id: postId, createdAt,
     profileId: feedPostingWho || profiles[0]?.id || 'unknown',
-    caption, photoUrl,
+    caption, photoUrls,
     tags: [...feedSelectedTags],
     reactions: {},
   };
@@ -7329,7 +7342,8 @@ async function addPost() {
 
   document.getElementById('feed-caption').value = '';
   document.getElementById('feed-post-date').value = todayStr();
-  setFeedPhotoPreview(null);
+  feedPostingPhotos = [];
+  renderFeedPhotoThumbs();
   feedSelectedTags.clear();
   renderFeedTagSelector();
   statusEl.textContent = '';
@@ -7340,9 +7354,9 @@ async function deletePost(postId) {
   if (!confirm('Delete this memory? This cannot be undone.')) return;
   const post = posts.find(p => p.id === postId);
   if (!post) return;
-  if (post.photoUrl) {
+  for (const url of (post.photoUrls || [])) {
     try {
-      const filename = post.photoUrl.split('/').pop().split('?')[0];
+      const filename = url.split('/').pop().split('?')[0];
       await sb.storage.from('memories').remove([filename]);
     } catch(e) { console.warn('Storage delete failed (ignored):', e); }
   }
@@ -7425,8 +7439,9 @@ async function renderDashOnThisDay() {
   card.style.display = '';
   body.innerHTML = onThisDay.slice(0, 3).map(p => {
     const yr = new Date(p.createdAt).getFullYear();
-    const photoHtml = p.photoUrl
-      ? `<img class="dash-otd-photo" src="${esc(p.photoUrl)}" alt="" onclick="openPhotoModal('${esc(p.photoUrl)}')">`
+    const firstPhoto = (p.photoUrls || [])[0] || null;
+    const photoHtml = firstPhoto
+      ? `<img class="dash-otd-photo" src="${esc(firstPhoto)}" alt="" onclick="openPhotoModal('${esc(firstPhoto)}')">`
       : `<div class="dash-otd-photo" style="background:var(--primary-bg);display:flex;align-items:center;justify-content:center;font-size:22px;">📸</div>`;
     const text = p.caption || (p.tags.length ? p.tags.map(t=>'#'+t).join(' ') : 'A memory');
     return `<div class="dash-otd-row">
