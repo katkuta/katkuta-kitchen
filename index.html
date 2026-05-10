@@ -2142,6 +2142,11 @@
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Tags</div>
           <div class="feed-tag-selector" id="feed-tag-selector"></div>
         </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;">📅 Date</label>
+          <input type="date" id="feed-post-date"
+                 style="font-size:13px;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:var(--surface);color:var(--text);font-family:inherit;flex:1;min-width:0;">
+        </div>
         <div class="feed-compose-foot">
           <span class="feed-compose-status" id="feed-compose-status"></span>
           <button class="btn btn-primary" onclick="addPost()">Post Memory ✨</button>
@@ -7133,6 +7138,9 @@ async function initFeedPage() {
   }
   // Default poster = first profile
   if (!feedPostingWho && profiles.length) feedPostingWho = profiles[0].id;
+  // Default date = today
+  const dateEl = document.getElementById('feed-post-date');
+  if (dateEl && !dateEl.value) dateEl.value = todayStr();
   renderFeedWhoSelector();
   renderFeedTagSelector();
   renderFeed();
@@ -7289,8 +7297,11 @@ async function addPost() {
     }
   }
 
+  const dateInput = document.getElementById('feed-post-date').value;
+  const createdAt = dateInput ? new Date(dateInput + 'T12:00:00').getTime() : Date.now();
+
   const newPost = {
-    id: postId, createdAt: Date.now(),
+    id: postId, createdAt,
     profileId: feedPostingWho || profiles[0]?.id || 'unknown',
     caption, photoUrl,
     tags: [...feedSelectedTags],
@@ -7310,6 +7321,7 @@ async function addPost() {
   }
 
   document.getElementById('feed-caption').value = '';
+  document.getElementById('feed-post-date').value = todayStr();
   setFeedPhotoPreview(null);
   feedSelectedTags.clear();
   renderFeedTagSelector();
