@@ -1700,6 +1700,85 @@
   font-size: 13px; cursor: pointer; transition: background .15s;
 }
 .dash-quick-btn:hover { background: #b7e4c7; }
+    /* ── FEED ── */
+    .feed-layout { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .feed-compose {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 20px; box-shadow: var(--sh);
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .feed-compose-photo {
+      border: 2px dashed var(--border); border-radius: var(--r-sm);
+      min-height: 80px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative; transition: border-color .15s, background .15s; overflow: hidden;
+    }
+    .feed-compose-photo:hover { border-color: var(--primary); background: var(--primary-bg); }
+    .feed-compose-photo.has-img { border-style: solid; padding: 0; }
+    .feed-compose-photo input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; min-height: unset; padding: 0; border: none;
+    }
+    .feed-compose-photo img { width: 100%; max-height: 260px; object-fit: cover; display: block; }
+    .feed-compose-remove {
+      position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,.55); color: #fff;
+      border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feed-compose textarea {
+      width: 100%; min-height: 68px; resize: vertical; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      font-size: 15px; font-family: inherit; background: var(--bg); color: var(--text); line-height: 1.5;
+    }
+    .feed-compose textarea:focus { outline: none; border-color: var(--primary); }
+    .feed-tag-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+    .feed-tag-btn {
+      padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border);
+      background: none; font-size: 12px; font-weight: 500; color: var(--muted);
+      cursor: pointer; font-family: inherit; transition: all .12s;
+    }
+    .feed-tag-btn.on { background: var(--primary-bg); color: var(--primary); border-color: var(--primary); }
+    .feed-compose-foot { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+    .feed-compose-status { font-size: 13px; color: var(--muted); flex: 1; }
+    .post-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
+    .post-card-photo { width: 100%; max-height: 420px; object-fit: cover; display: block; cursor: zoom-in; }
+    .post-card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .post-card-header { display: flex; align-items: center; gap: 10px; }
+    .post-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .post-meta { flex: 1; min-width: 0; }
+    .post-author { font-size: 14px; font-weight: 600; }
+    .post-time   { font-size: 12px; color: var(--muted); }
+    .post-caption { font-size: 15px; line-height: 1.55; }
+    .post-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .post-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--primary-bg); color: var(--primary); font-weight: 500; }
+    .post-reactions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .reaction-btn {
+      display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 20px;
+      border: 1px solid var(--border); background: none; font-size: 14px; cursor: pointer;
+      font-family: inherit; transition: all .12s; color: var(--muted); min-height: 34px;
+    }
+    .reaction-btn:hover { border-color: var(--primary); background: var(--primary-bg); }
+    .reaction-btn.reacted { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); font-weight: 600; }
+    .reaction-count { font-size: 13px; }
+    .post-del-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 4px 6px; border-radius: var(--r-sm); transition: all .12s; font-family: inherit; }
+    .post-del-btn:hover { background: var(--danger-bg); color: var(--danger); }
+    .photo-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 500;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .photo-modal-overlay.hidden { display: none; }
+    .photo-modal-overlay img { max-width: 100%; max-height: 90vh; border-radius: var(--r-sm); object-fit: contain; }
+    .photo-modal-close {
+      position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,.15);
+      border: none; color: #fff; font-size: 22px; cursor: pointer;
+      width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .dash-otd-photo { width: 52px; height: 52px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; cursor: zoom-in; }
+    .dash-otd-row { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 8px; }
+    .dash-otd-text { flex: 1; min-width: 0; }
+    .dash-otd-caption { font-weight: 500; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .dash-otd-meta { font-size: 11px; color: var(--muted); }
+    .feed-who-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+    .feed-who-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; font-size: 13px; font-family: inherit; cursor: pointer; transition: all .12s; color: var(--text); }
+    .feed-who-btn.on { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -1720,6 +1799,7 @@
       <button class="nav-tab" onclick="showPage('shopping')">Shopping</button>
       <button class="nav-tab" onclick="showPage('notes')">Notes & To-dos</button>
       <button class="nav-tab" onclick="showPage('events')">Events</button>
+      <button class="nav-tab" onclick="showPage('feed')">📸 Feed</button>
       <button class="nav-tab" onclick="showPage('profiles')">Profiles</button>
       <button class="dark-toggle" onclick="toggleDark()" id="dark-toggle-btn" title="Toggle dark mode">🌙</button>
       <button class="nav-tab nav-settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
@@ -1767,6 +1847,15 @@
         <div class="dash-card-body" id="dash-events-body">
           <div class="dash-empty">Loading…</div>
         </div>
+      </div>
+
+      <!-- On This Day -->
+      <div class="dash-card" id="dash-otd-card" style="display:none;">
+        <div class="dash-card-head">
+          <span class="dash-card-title">🌸 On This Day</span>
+          <button class="dash-link-btn" onclick="showPage('feed')">View feed →</button>
+        </div>
+        <div class="dash-card-body" id="dash-otd-body"></div>
       </div>
 
       <!-- Pending To-dos -->
@@ -2000,6 +2089,44 @@
           <div class="cal-side-head">Upcoming</div>
           <div class="cal-side-body" id="upcoming-events"></div>
         </div>
+      </div>
+    </div>
+  </div>
+  <!-- ── MEMORY FEED ── -->
+  <div id="page-feed" class="page">
+    <div class="page-header">
+      <h1 class="page-title">📸 Memory Feed</h1>
+    </div>
+    <div class="feed-layout">
+      <!-- Compose -->
+      <div class="feed-compose">
+        <div class="feed-compose-photo" id="feed-compose-photo">
+          <input type="file" id="feed-photo-input" accept="image/*" onchange="handleFeedPhotoSelect(event)">
+          <div id="feed-compose-placeholder" style="text-align:center;padding:18px;pointer-events:none;">
+            <div style="font-size:30px;margin-bottom:6px;">📷</div>
+            <div style="font-size:14px;color:var(--muted);">Tap to add a photo (optional)</div>
+          </div>
+          <img id="feed-compose-preview" style="display:none;" alt="">
+          <button type="button" class="feed-compose-remove" id="feed-compose-remove"
+                  style="display:none;" onclick="removeFeedPhoto(event)">✕</button>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Posted by</div>
+          <div class="feed-who-selector" id="feed-who-selector"></div>
+        </div>
+        <textarea id="feed-caption" placeholder="What's on your mind? (required if no photo)"></textarea>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Tags</div>
+          <div class="feed-tag-selector" id="feed-tag-selector"></div>
+        </div>
+        <div class="feed-compose-foot">
+          <span class="feed-compose-status" id="feed-compose-status"></span>
+          <button class="btn btn-primary" onclick="addPost()">Post Memory ✨</button>
+        </div>
+      </div>
+      <!-- Feed list -->
+      <div id="feed-list">
+        <div class="empty-state"><div class="empty-icon">📸</div><p>Loading memories…</p></div>
       </div>
     </div>
   </div>
@@ -2589,6 +2716,12 @@
   </div>
 </div>
 
+<!-- ── PHOTO LIGHTBOX ── -->
+<div class="photo-modal-overlay hidden" id="photo-modal-overlay" onclick="closePhotoModal()">
+  <button class="photo-modal-close" onclick="closePhotoModal()">✕</button>
+  <img id="photo-modal-img" src="" alt="Memory photo">
+</div>
+
 <!-- ── CONFIRM DIALOG ── -->
 <div class="confirm-overlay hidden" id="confirm-overlay">
   <div class="confirm-box">
@@ -2641,6 +2774,16 @@ let currentPhoto      = null;
 let deleteTargetId = null;
 let detailId       = null;
 let currentPage    = 'recipes';
+
+// Feed state
+let posts            = [];
+let feedLoaded       = false;
+let feedPostingPhoto = null;
+let feedSelectedTags = new Set();
+let feedPostingWho   = null; // profileId of poster
+
+const FEED_TAGS  = ['food', 'travel', 'everyday', 'milestone', 'nature', 'home', 'fun'];
+const FEED_EMOJIS = ['❤️', '😂', '🔥', '😍'];
 
 // ── DB MAPPERS ────────────────────────────────────────────────────────────────
 function recipeToDb(r) {
@@ -2695,6 +2838,29 @@ function dbToLog(d) {
     id: d.id, mealType: d.meal_type, name: d.name, recipeId: d.recipe_id,
     servings: d.servings, calories: d.calories,
     protein: d.protein, carbs: d.carbs, fat: d.fat,
+  };
+}
+
+function dbToPost(d) {
+  return {
+    id:        d.id,
+    createdAt: d.created_at,
+    profileId: d.profile_id,
+    caption:   d.caption   || '',
+    photoUrl:  d.photo_url || null,
+    tags:      d.tags      || [],
+    reactions: d.reactions || {},
+  };
+}
+function postToDb(p) {
+  return {
+    id:         p.id,
+    created_at: p.createdAt,
+    profile_id: p.profileId,
+    caption:    p.caption  || null,
+    photo_url:  p.photoUrl || null,
+    tags:       p.tags     || [],
+    reactions:  p.reactions || {},
   };
 }
 
@@ -3075,6 +3241,7 @@ function showPage(name) {
   if (name === 'shopping') initShoppingList();
   if (name === 'notes')    initNotesPage();
   if (name === 'events')   initEventsPage();
+  if (name === 'feed')     initFeedPage();
 }
 
 // ── ADD / EDIT MODAL ──────────────────────────────────────────────────────────
@@ -6146,6 +6313,9 @@ async function initDashboard() {
 
   // Render todos (use already-loaded todos or load them)
   await renderDashTodos();
+
+  // On This Day — memory feed
+  renderDashOnThisDay();
 }
 
 async function renderDashMeals(todayStr) {
@@ -6892,6 +7062,7 @@ function overlayClick(e, id, closeFn) { if (e.target.id === id) closeFn(); }
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (!document.getElementById('photo-modal-overlay').classList.contains('hidden')) { closePhotoModal(); return; }
   if (!document.getElementById('event-overlay').classList.contains('hidden')) { closeEventModal(); return; }
   if (!document.getElementById('note-overlay').classList.contains('hidden'))  { closeNoteModal();  return; }
   if (!document.getElementById('todo-overlay').classList.contains('hidden'))  { closeTodoModal();  return; }
@@ -6902,6 +7073,301 @@ document.addEventListener('keydown', e => {
   if (!document.getElementById('edit-overlay').classList.contains('hidden'))     { closeEditModal();     return; }
   if (!document.getElementById('detail-overlay').classList.contains('hidden'))   { closeDetailModal();   return; }
 });
+
+// ── MEMORY FEED ───────────────────────────────────────────────────────────────
+async function initFeedPage() {
+  if (!feedLoaded) {
+    await loadPosts();
+    feedLoaded = true;
+  }
+  // Default poster = first profile
+  if (!feedPostingWho && profiles.length) feedPostingWho = profiles[0].id;
+  renderFeedWhoSelector();
+  renderFeedTagSelector();
+  renderFeed();
+}
+
+async function loadPosts() {
+  try {
+    const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    posts = (data || []).map(dbToPost);
+  } catch(e) {
+    console.error('Posts load error:', e);
+    posts = [];
+  }
+}
+
+function renderFeedWhoSelector() {
+  const sel = document.getElementById('feed-who-selector');
+  if (!sel) return;
+  sel.innerHTML = profiles.map(p => `
+    <button type="button" class="feed-who-btn ${feedPostingWho === p.id ? 'on' : ''}"
+            onclick="setFeedWho('${esc(p.id)}')">
+      ${esc(p.avatar || '👤')} ${esc(p.name)}
+    </button>`).join('');
+}
+
+function setFeedWho(profileId) {
+  feedPostingWho = profileId;
+  renderFeedWhoSelector();
+}
+
+function renderFeedTagSelector() {
+  const sel = document.getElementById('feed-tag-selector');
+  if (!sel) return;
+  sel.innerHTML = FEED_TAGS.map(t => `
+    <button type="button" class="feed-tag-btn ${feedSelectedTags.has(t) ? 'on' : ''}"
+            onclick="toggleFeedTag('${esc(t)}')">#${esc(t)}</button>`).join('');
+}
+
+function toggleFeedTag(tag) {
+  feedSelectedTags.has(tag) ? feedSelectedTags.delete(tag) : feedSelectedTags.add(tag);
+  renderFeedTagSelector();
+}
+
+function renderFeed() {
+  const list = document.getElementById('feed-list');
+  if (!list) return;
+  if (!posts.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📸</div>
+      <h3>No memories yet</h3>
+      <p>Share your first family memory above!</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = posts.map(p => postCardHtml(p)).join('');
+}
+
+function postCardHtml(p) {
+  const profile  = profiles.find(pr => pr.id === p.profileId);
+  const avatar   = profile?.avatar || '👤';
+  const timeStr  = relativeTime(p.createdAt);
+  const photoHtml = p.photoUrl
+    ? `<img class="post-card-photo" src="${esc(p.photoUrl)}" alt="Memory" loading="lazy"
+            onclick="openPhotoModal('${esc(p.photoUrl)}')">`  : '';
+  const captionHtml = p.caption ? `<div class="post-caption">${esc(p.caption)}</div>` : '';
+  const tagsHtml = p.tags.length
+    ? `<div class="post-tags">${p.tags.map(t=>`<span class="post-tag">#${esc(t)}</span>`).join('')}</div>` : '';
+  const reactionsHtml = FEED_EMOJIS.map(emoji => {
+    const who    = p.reactions[emoji] || [];
+    const count  = who.length;
+    const myId   = feedPostingWho || profiles[0]?.id;
+    const reacted = myId && who.includes(myId);
+    return `<button class="reaction-btn ${reacted ? 'reacted' : ''}"
+              onclick="toggleReaction('${esc(p.id)}','${esc(emoji)}')">${emoji}${count ? ` <span class="reaction-count">${count}</span>` : ''}</button>`;
+  }).join('');
+  const canDelete = p.profileId === (feedPostingWho || profiles[0]?.id);
+  const deleteHtml = canDelete
+    ? `<button class="post-del-btn" onclick="deletePost('${esc(p.id)}')" title="Delete">🗑️</button>` : '';
+  return `<div class="post-card" id="post-${esc(p.id)}">
+    ${photoHtml}
+    <div class="post-card-body">
+      <div class="post-card-header">
+        <div class="post-avatar">${avatar}</div>
+        <div class="post-meta">
+          <div class="post-author">${esc(profile?.name || 'Unknown')}</div>
+          <div class="post-time">${timeStr}</div>
+        </div>
+        ${deleteHtml}
+      </div>
+      ${captionHtml}
+      ${tagsHtml}
+      <div class="post-reactions">${reactionsHtml}</div>
+    </div>
+  </div>`;
+}
+
+function handleFeedPhotoSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { toast('Please select an image file'); return; }
+  resizeImage(file, 1200, 0.85, dataUrl => setFeedPhotoPreview(dataUrl));
+  e.target.value = '';
+}
+
+function setFeedPhotoPreview(dataUrl) {
+  feedPostingPhoto = dataUrl;
+  const placeholder = document.getElementById('feed-compose-placeholder');
+  const preview     = document.getElementById('feed-compose-preview');
+  const removeBtn   = document.getElementById('feed-compose-remove');
+  const area        = document.getElementById('feed-compose-photo');
+  if (dataUrl) {
+    preview.src = dataUrl; preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    removeBtn.style.display = 'flex';
+    area.classList.add('has-img');
+  } else {
+    preview.src = ''; preview.style.display = 'none';
+    placeholder.style.display = '';
+    removeBtn.style.display = 'none';
+    area.classList.remove('has-img');
+  }
+}
+
+function removeFeedPhoto(e) {
+  e.stopPropagation();
+  feedPostingPhoto = null;
+  setFeedPhotoPreview(null);
+}
+
+async function addPost() {
+  const caption = document.getElementById('feed-caption').value.trim();
+  if (!feedPostingPhoto && !caption) { toast('Add a photo or write a caption first'); return; }
+  const statusEl = document.getElementById('feed-compose-status');
+  statusEl.textContent = feedPostingPhoto ? '⏳ Uploading photo…' : '⏳ Posting…';
+
+  const postId = uid();
+  let photoUrl = null;
+
+  if (feedPostingPhoto) {
+    try {
+      const res  = await fetch(feedPostingPhoto);
+      const blob = await res.blob();
+      const ext  = blob.type.includes('png') ? 'png' : 'jpg';
+      const path = `${postId}.${ext}`;
+      const { error: upErr } = await sb.storage.from('memories').upload(path, blob, { contentType: blob.type });
+      if (upErr) throw upErr;
+      const { data: urlData } = sb.storage.from('memories').getPublicUrl(path);
+      photoUrl = urlData.publicUrl;
+    } catch(e) {
+      console.error('Photo upload error:', e);
+      statusEl.textContent = '⚠️ Photo upload failed — posting without photo';
+      photoUrl = null;
+    }
+  }
+
+  const newPost = {
+    id: postId, createdAt: Date.now(),
+    profileId: feedPostingWho || profiles[0]?.id || 'unknown',
+    caption, photoUrl,
+    tags: [...feedSelectedTags],
+    reactions: {},
+  };
+
+  try {
+    const { error } = await sb.from('posts').insert(postToDb(newPost));
+    if (error) throw error;
+    posts.unshift(newPost);
+    toast('Memory posted! 📸');
+  } catch(e) {
+    console.error('Post save error:', e);
+    toast('⚠️ Could not save post — check Supabase setup');
+    statusEl.textContent = '';
+    return;
+  }
+
+  document.getElementById('feed-caption').value = '';
+  setFeedPhotoPreview(null);
+  feedSelectedTags.clear();
+  renderFeedTagSelector();
+  statusEl.textContent = '';
+  renderFeed();
+}
+
+async function deletePost(postId) {
+  if (!confirm('Delete this memory? This cannot be undone.')) return;
+  const post = posts.find(p => p.id === postId);
+  if (!post) return;
+  if (post.photoUrl) {
+    try {
+      const filename = post.photoUrl.split('/').pop().split('?')[0];
+      await sb.storage.from('memories').remove([filename]);
+    } catch(e) { console.warn('Storage delete failed (ignored):', e); }
+  }
+  try {
+    const { error } = await sb.from('posts').delete().eq('id', postId);
+    if (error) throw error;
+    posts = posts.filter(p => p.id !== postId);
+    toast('Memory deleted');
+    renderFeed();
+  } catch(e) {
+    console.error('Delete error:', e);
+    toast('⚠️ Could not delete post');
+  }
+}
+
+async function toggleReaction(postId, emoji) {
+  const post = posts.find(p => p.id === postId);
+  if (!post) return;
+  const myId = feedPostingWho || profiles[0]?.id || '';
+  if (!post.reactions[emoji]) post.reactions[emoji] = [];
+  const idx = post.reactions[emoji].indexOf(myId);
+  if (idx === -1) post.reactions[emoji].push(myId);
+  else            post.reactions[emoji].splice(idx, 1);
+  renderFeed(); // optimistic
+  try {
+    const { error } = await sb.from('posts').update({ reactions: post.reactions }).eq('id', postId);
+    if (error) throw error;
+  } catch(e) {
+    // rollback
+    if (idx === -1) post.reactions[emoji].pop();
+    else            post.reactions[emoji].splice(idx, 0, myId);
+    renderFeed();
+    toast('⚠️ Could not save reaction');
+  }
+}
+
+function openPhotoModal(url) {
+  document.getElementById('photo-modal-img').src = url;
+  document.getElementById('photo-modal-overlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closePhotoModal() {
+  document.getElementById('photo-modal-overlay').classList.add('hidden');
+  document.getElementById('photo-modal-img').src = '';
+  document.body.style.overflow = '';
+}
+
+function relativeTime(epochMs) {
+  const diff = Date.now() - epochMs;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1)  return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)  return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7)  return `${days}d ago`;
+  return new Date(epochMs).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+async function renderDashOnThisDay() {
+  if (!posts.length && !feedLoaded) {
+    try {
+      const { data } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+      posts = (data || []).map(dbToPost);
+      feedLoaded = true;
+    } catch(e) { return; }
+  }
+  const now      = new Date();
+  const todayMD  = `${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const thisYear = now.getFullYear();
+  const onThisDay = posts.filter(p => {
+    const d  = new Date(p.createdAt);
+    const md = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return md === todayMD && d.getFullYear() < thisYear;
+  });
+  const card = document.getElementById('dash-otd-card');
+  const body = document.getElementById('dash-otd-body');
+  if (!card || !body) return;
+  if (!onThisDay.length) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  body.innerHTML = onThisDay.slice(0, 3).map(p => {
+    const yr = new Date(p.createdAt).getFullYear();
+    const photoHtml = p.photoUrl
+      ? `<img class="dash-otd-photo" src="${esc(p.photoUrl)}" alt="" onclick="openPhotoModal('${esc(p.photoUrl)}')">`
+      : `<div class="dash-otd-photo" style="background:var(--primary-bg);display:flex;align-items:center;justify-content:center;font-size:22px;">📸</div>`;
+    const text = p.caption || (p.tags.length ? p.tags.map(t=>'#'+t).join(' ') : 'A memory');
+    return `<div class="dash-otd-row">
+      ${photoHtml}
+      <div class="dash-otd-text">
+        <div class="dash-otd-caption">${esc(text)}</div>
+        <div class="dash-otd-meta">${thisYear - yr} year${thisYear - yr !== 1 ? 's' : ''} ago</div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 initApp();
