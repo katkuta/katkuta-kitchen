@@ -1766,6 +1766,24 @@
     }
     .feed-add-photo-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
     .post-card-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .post-photo-carousel { position: relative; background: #000; }
+    .post-photo-track {
+      display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .post-photo-track::-webkit-scrollbar { display: none; }
+    .post-photo-slide {
+      flex-shrink: 0; width: 100%; max-height: 420px;
+      object-fit: cover; scroll-snap-align: start; cursor: zoom-in; display: block;
+    }
+    .post-photo-dots {
+      display: flex; justify-content: center; gap: 6px; padding: 8px 0 2px; background: var(--surface);
+    }
+    .post-photo-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--border);
+      transition: background .2s; cursor: pointer; border: none; padding: 0;
+    }
+    .post-photo-dot.active { background: var(--primary); width: 18px; border-radius: 4px; }
     .post-card-header { display: flex; align-items: center; gap: 10px; }
     .post-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
     .post-meta { flex: 1; min-width: 0; }
@@ -2165,6 +2183,44 @@
     </div>
   </div>
 </main>
+
+<!-- ── EDIT POST MODAL ── -->
+<div class="overlay hidden" id="edit-post-overlay" onclick="overlayClick(event,'edit-post-overlay',closeEditPostModal)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-post-modal-title" style="max-height:90vh;overflow-y:auto;">
+    <div class="modal-head">
+      <h2 class="modal-title" id="edit-post-modal-title">Edit Memory</h2>
+      <button class="modal-close" onclick="closeEditPostModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="edit-post-id">
+      <div class="form-group">
+        <label>Photos</label>
+        <div class="feed-photo-thumbs" id="edit-post-photo-thumbs"></div>
+        <input type="file" id="edit-post-photo-input" accept="image/*" multiple style="display:none;" onchange="handleEditPostPhotoAdd(event)">
+      </div>
+      <div class="form-group">
+        <label>Caption</label>
+        <textarea id="edit-post-caption" rows="3" placeholder="Write something…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Posted by</label>
+        <select id="edit-post-who" style="font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font-family:inherit;width:100%;"></select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="edit-post-date" style="font-size:13px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--text);font-family:inherit;width:100%;">
+      </div>
+      <div class="form-group">
+        <label>Tags</label>
+        <div class="feed-tag-selector" id="edit-post-tags"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeEditPostModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditPost()">Save</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── ADD / EDIT RECIPE MODAL ── -->
 <div class="overlay hidden" id="edit-overlay" onclick="overlayClick(event,'edit-overlay',closeEditModal)">
@@ -2843,6 +2899,9 @@ let feedLoaded       = false;
 let feedPostingPhotos = []; // array of data URLs
 let feedSelectedTags = new Set();
 let feedPostingWho   = null; // profileId of poster
+let editingPostId = null;
+let editingPostPhotoItems = []; // { url: string (remote), dataUrl: string (new local), removed: bool }
+let editPostSelectedTags = new Set();
 
 const FEED_TAGS  = ['food', 'travel', 'everyday', 'milestone', 'nature', 'home', 'fun'];
 const FEED_EMOJIS = ['❤️', '😂', '🔥', '😍'];
@@ -7236,8 +7295,16 @@ function postCardHtml(p) {
   if (photos.length === 1) {
     photoHtml = `<img class="post-card-photo" src="${esc(photos[0])}" alt="Memory" loading="lazy" onclick="openPhotoModal('${esc(photos[0])}')")>`;
   } else if (photos.length > 1) {
-    const cls = photos.length === 2 ? 'count-2' : photos.length === 3 ? 'count-3' : 'count-4plus';
-    photoHtml = `<div class="post-photo-grid ${cls}">${photos.map(u => `<img class="post-photo-grid-img" src="${esc(u)}" alt="Memory" loading="lazy" onclick="openPhotoModal('${esc(u)}')">`).join('')}</div>`;
+    const slides = photos.map((u, i) =>
+      `<img class="post-photo-slide" src="${esc(u)}" alt="Memory ${i+1}" loading="lazy" onclick="openPhotoModal('${esc(u)}')">`
+    ).join('');
+    const dots = photos.map((_, i) =>
+      `<button class="post-photo-dot${i===0?' active':''}" onclick="scrollPostPhoto('${esc(p.id)}',${i})"></button>`
+    ).join('');
+    photoHtml = `<div class="post-photo-carousel">
+      <div class="post-photo-track" id="photo-track-${esc(p.id)}" onscroll="updatePostDots('${esc(p.id)}',${photos.length})">${slides}</div>
+      <div class="post-photo-dots" id="photo-dots-${esc(p.id)}">${dots}</div>
+    </div>`;
   }
   const captionHtml = p.caption ? `<div class="post-caption">${esc(p.caption)}</div>` : '';
   const tagsHtml = p.tags.length
@@ -7250,9 +7317,10 @@ function postCardHtml(p) {
     return `<button class="reaction-btn ${reacted ? 'reacted' : ''}"
               onclick="toggleReaction('${esc(p.id)}','${esc(emoji)}')">${emoji}${count ? ` <span class="reaction-count">${count}</span>` : ''}</button>`;
   }).join('');
-  const canDelete = p.profileId === (feedPostingWho || profiles[0]?.id);
-  const deleteHtml = canDelete
-    ? `<button class="post-del-btn" onclick="deletePost('${esc(p.id)}')" title="Delete">🗑️</button>` : '';
+  const canEdit = p.profileId === (feedPostingWho || profiles[0]?.id);
+  const actionBtns = canEdit ? `
+    <button class="post-del-btn" onclick="openEditPost('${esc(p.id)}')" title="Edit" style="font-size:13px;">✏️</button>
+    <button class="post-del-btn" onclick="deletePost('${esc(p.id)}')" title="Delete">🗑️</button>` : '';
   return `<div class="post-card" id="post-${esc(p.id)}">
     ${photoHtml}
     <div class="post-card-body">
@@ -7262,7 +7330,7 @@ function postCardHtml(p) {
           <div class="post-author">${esc(profile?.name || 'Unknown')}</div>
           <div class="post-time">${timeStr}</div>
         </div>
-        ${deleteHtml}
+        ${actionBtns}
       </div>
       ${captionHtml}
       ${tagsHtml}
@@ -7557,6 +7625,166 @@ async function handleVoiceStop() {
     if (st) { st.textContent = `❌ Transcription failed: ${e.message}`; }
     setTimeout(() => { if (st) st.style.display = 'none'; }, 4000);
   }
+}
+
+function openEditPost(postId) {
+  const p = posts.find(x => x.id === postId);
+  if (!p) return;
+  editingPostId = postId;
+  // Photos: existing remote URLs
+  editingPostPhotoItems = (p.photoUrls || []).map(url => ({ url, dataUrl: null, removed: false }));
+  // Caption
+  document.getElementById('edit-post-id').value = postId;
+  document.getElementById('edit-post-caption').value = p.caption || '';
+  // Date
+  const d = new Date(p.createdAt);
+  const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  document.getElementById('edit-post-date').value = dateStr;
+  // Who
+  const whoSel = document.getElementById('edit-post-who');
+  whoSel.innerHTML = profiles.map(pr => `<option value="${esc(pr.id)}" ${pr.id===p.profileId?'selected':''}>${esc(pr.name)}</option>`).join('');
+  // Tags
+  editPostSelectedTags = new Set(p.tags || []);
+  renderEditPostTags();
+  // Photos
+  renderEditPostPhotos();
+  show('edit-post-overlay');
+}
+
+function closeEditPostModal() {
+  hide('edit-post-overlay');
+  editingPostId = null;
+  editingPostPhotoItems = [];
+  editPostSelectedTags.clear();
+}
+
+function renderEditPostPhotos() {
+  const container = document.getElementById('edit-post-photo-thumbs');
+  if (!container) return;
+  const thumbs = editingPostPhotoItems
+    .filter(item => !item.removed)
+    .map((item, i) => {
+      const src = item.dataUrl || item.url;
+      return `<div class="feed-photo-thumb">
+        <img src="${src}" alt="">
+        <button type="button" class="feed-photo-thumb-remove" onclick="removeEditPostPhoto(${i})">✕</button>
+      </div>`;
+    }).join('');
+  container.innerHTML = thumbs + `
+    <button type="button" class="feed-add-photo-btn" onclick="document.getElementById('edit-post-photo-input').click()">
+      <span style="font-size:22px;">📷</span>
+      <span>Add</span>
+    </button>`;
+}
+
+function removeEditPostPhoto(index) {
+  // index is among non-removed items
+  const active = editingPostPhotoItems.filter(i => !i.removed);
+  const item = active[index];
+  if (!item) return;
+  item.removed = true;
+  renderEditPostPhotos();
+}
+
+function handleEditPostPhotoAdd(e) {
+  const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+  files.forEach(file => {
+    resizeImage(file, 1200, 0.85, dataUrl => {
+      editingPostPhotoItems.push({ url: null, dataUrl, removed: false });
+      renderEditPostPhotos();
+    });
+  });
+  e.target.value = '';
+}
+
+function renderEditPostTags() {
+  const el = document.getElementById('edit-post-tags');
+  if (!el) return;
+  el.innerHTML = FEED_TAGS.map(t =>
+    `<button class="feed-tag-btn ${editPostSelectedTags.has(t)?'on':''}" onclick="toggleEditPostTag('${t}')">#${t}</button>`
+  ).join('');
+}
+
+function toggleEditPostTag(tag) {
+  editPostSelectedTags.has(tag) ? editPostSelectedTags.delete(tag) : editPostSelectedTags.add(tag);
+  renderEditPostTags();
+}
+
+async function saveEditPost() {
+  if (!editingPostId) return;
+  const post = posts.find(p => p.id === editingPostId);
+  if (!post) return;
+
+  const caption = document.getElementById('edit-post-caption').value.trim();
+  const dateVal = document.getElementById('edit-post-date').value;
+  const createdAt = dateVal ? new Date(dateVal + 'T12:00:00').getTime() : post.createdAt;
+  const profileId = document.getElementById('edit-post-who').value;
+
+  // Upload new photos, collect final URL list
+  const finalUrls = [];
+  for (const item of editingPostPhotoItems) {
+    if (item.removed) {
+      // Delete from storage if it was a remote URL
+      if (item.url) {
+        try {
+          const filename = item.url.split('/').pop().split('?')[0];
+          await sb.storage.from('memories').remove([filename]);
+        } catch(e) { console.warn('Storage remove failed:', e); }
+      }
+      continue;
+    }
+    if (item.dataUrl) {
+      // New photo — upload
+      try {
+        const res  = await fetch(item.dataUrl);
+        const blob = await res.blob();
+        const ext  = blob.type.includes('png') ? 'png' : 'jpg';
+        const path = `${editingPostId}_${Date.now()}.${ext}`;
+        const { error: upErr } = await sb.storage.from('memories').upload(path, blob, { contentType: blob.type });
+        if (upErr) throw upErr;
+        const { data: urlData } = sb.storage.from('memories').getPublicUrl(path);
+        finalUrls.push(urlData.publicUrl);
+      } catch(e) {
+        console.error('Upload error:', e);
+        toast('⚠️ One photo failed to upload');
+      }
+    } else if (item.url) {
+      finalUrls.push(item.url);
+    }
+  }
+
+  // Update post object
+  post.photoUrls = finalUrls;
+  post.caption   = caption;
+  post.createdAt = createdAt;
+  post.profileId = profileId;
+  post.tags      = [...editPostSelectedTags];
+
+  try {
+    const { error } = await sb.from('posts').update(postToDb(post)).eq('id', editingPostId);
+    if (error) throw error;
+    toast('Memory updated ✅');
+  } catch(e) {
+    console.error('Save edit error:', e);
+    toast('⚠️ Could not save changes');
+  }
+
+  closeEditPostModal();
+  renderFeed();
+}
+
+function scrollPostPhoto(postId, index) {
+  const track = document.getElementById('photo-track-' + postId);
+  if (!track) return;
+  track.scrollTo({ left: track.clientWidth * index, behavior: 'smooth' });
+}
+
+function updatePostDots(postId, total) {
+  const track = document.getElementById('photo-track-' + postId);
+  const dotsEl = document.getElementById('photo-dots-' + postId);
+  if (!track || !dotsEl) return;
+  const idx = Math.round(track.scrollLeft / track.clientWidth);
+  dotsEl.querySelectorAll('.post-photo-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
 }
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
