@@ -2133,7 +2133,7 @@
         <div style="position:relative;">
           <textarea id="feed-caption" placeholder="What's on your mind? (required if no photo)" style="padding-right:48px;"></textarea>
           <button type="button" id="voice-record-btn" class="voice-btn"
-                  onclick="toggleVoiceRecord()"
+                  onclick="toggleVoiceRecord('feed-caption','voice-record-btn','voice-status')"
                   style="position:absolute;right:8px;bottom:8px;padding:6px 10px;font-size:16px;border-radius:50%;width:34px;height:34px;justify-content:center;"
                   title="Record voice message">🎤</button>
         </div>
@@ -2616,7 +2616,14 @@
       <input type="hidden" id="todo-edit-id">
       <div class="form-group" style="margin-bottom:14px;">
         <label>Task *</label>
-        <input type="text" id="todo-text" placeholder="What needs to be done?">
+        <div style="position:relative;">
+          <input type="text" id="todo-text" placeholder="What needs to be done?" style="padding-right:44px;">
+          <button type="button" id="todo-voice-btn" class="voice-btn"
+                  onclick="toggleVoiceRecord('todo-text','todo-voice-btn','todo-voice-status')"
+                  style="position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:4px 8px;font-size:15px;border-radius:50%;width:30px;height:30px;justify-content:center;"
+                  title="Record voice message">🎤</button>
+        </div>
+        <div class="voice-status" id="todo-voice-status" style="display:none;font-size:12px;margin-top:4px;"></div>
       </div>
       <div class="form-row" style="margin-bottom:14px;">
         <div class="form-group">
@@ -2661,7 +2668,14 @@
       </div>
       <div class="form-group" style="margin-bottom:14px;">
         <label>Content *</label>
-        <textarea id="note-content" placeholder="Write anything…"></textarea>
+        <div style="position:relative;">
+          <textarea id="note-content" placeholder="Write anything…" style="padding-right:48px;"></textarea>
+          <button type="button" id="note-voice-btn" class="voice-btn"
+                  onclick="toggleVoiceRecord('note-content','note-voice-btn','note-voice-status')"
+                  style="position:absolute;right:8px;bottom:8px;padding:6px 10px;font-size:15px;border-radius:50%;width:32px;height:32px;justify-content:center;"
+                  title="Record voice message">🎤</button>
+        </div>
+        <div class="voice-status" id="note-voice-status" style="display:none;font-size:12px;margin-top:4px;"></div>
       </div>
       <div class="form-group">
         <label>Tags <span style="font-weight:400;text-transform:none;font-size:11px;">(comma separated)</span></label>
@@ -2687,7 +2701,14 @@
       <input type="hidden" id="event-edit-id">
       <div class="form-group" style="margin-bottom:14px;">
         <label>Title *</label>
-        <input type="text" id="event-title" placeholder="e.g. Doctor's appointment, Anna's birthday…">
+        <div style="position:relative;">
+          <input type="text" id="event-title" placeholder="e.g. Doctor's appointment, Anna's birthday…" style="padding-right:44px;">
+          <button type="button" id="event-title-voice-btn" class="voice-btn"
+                  onclick="toggleVoiceRecord('event-title','event-title-voice-btn','event-title-voice-status')"
+                  style="position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:4px 8px;font-size:15px;border-radius:50%;width:30px;height:30px;justify-content:center;"
+                  title="Record voice message">🎤</button>
+        </div>
+        <div class="voice-status" id="event-title-voice-status" style="display:none;font-size:12px;margin-top:4px;"></div>
       </div>
       <div class="form-row" style="margin-bottom:14px;">
         <div class="form-group">
@@ -2728,7 +2749,14 @@
       </div>
       <div class="form-group">
         <label>Notes</label>
-        <textarea id="event-notes" rows="2" placeholder="Any extra details…"></textarea>
+        <div style="position:relative;">
+          <textarea id="event-notes" rows="2" placeholder="Any extra details…" style="padding-right:48px;"></textarea>
+          <button type="button" id="event-voice-btn" class="voice-btn"
+                  onclick="toggleVoiceRecord('event-notes','event-voice-btn','event-voice-status')"
+                  style="position:absolute;right:8px;bottom:8px;padding:6px 10px;font-size:15px;border-radius:50%;width:32px;height:32px;justify-content:center;"
+                  title="Record voice message">🎤</button>
+        </div>
+        <div class="voice-status" id="event-voice-status" style="display:none;font-size:12px;margin-top:4px;"></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -7393,14 +7421,20 @@ async function renderDashOnThisDay() {
 }
 
 // ── VOICE RECORDING (Feed) ────────────────────────────────────────────────────
-let voiceRecorder   = null;
-let voiceChunks     = [];
-let voiceRecording  = false;
+let voiceRecorder       = null;
+let voiceChunks         = [];
+let voiceRecording      = false;
+let voiceTargetFieldId  = 'feed-caption';
+let voiceActiveBtnId    = 'voice-record-btn';
+let voiceActiveStatusId = 'voice-status';
 
-async function toggleVoiceRecord() {
+async function toggleVoiceRecord(fieldId, btnId, statusId) {
   if (voiceRecording) {
     stopVoiceRecord();
   } else {
+    voiceTargetFieldId  = fieldId  || 'feed-caption';
+    voiceActiveBtnId    = btnId    || 'voice-record-btn';
+    voiceActiveStatusId = statusId || 'voice-status';
     await startVoiceRecord();
   }
 }
@@ -7415,13 +7449,10 @@ async function startVoiceRecord() {
     voiceRecorder.start();
     voiceRecording = true;
 
-    const btn = document.getElementById('voice-record-btn');
-    const st  = document.getElementById('voice-status');
-    btn.classList.add('recording');
-    btn.textContent = '⏹';
-    btn.title = 'Stop recording';
-    st.style.display = '';
-    st.textContent = '🔴 Recording… tap ⏹ to stop';
+    const btn = document.getElementById(voiceActiveBtnId);
+    const st  = document.getElementById(voiceActiveStatusId);
+    if (btn) { btn.classList.add('recording'); btn.textContent = '⏹'; btn.title = 'Stop recording'; }
+    if (st)  { st.style.display = ''; st.textContent = '🔴 Recording… tap ⏹ to stop'; }
   } catch(e) {
     toast('⚠️ Microphone access denied');
     console.warn('Voice record error:', e);
@@ -7434,24 +7465,21 @@ function stopVoiceRecord() {
     voiceRecorder.stream.getTracks().forEach(t => t.stop());
   }
   voiceRecording = false;
-  const btn = document.getElementById('voice-record-btn');
-  btn.classList.remove('recording');
-  btn.textContent = '🎤';
-  btn.title = 'Record voice message';
+  const btn = document.getElementById(voiceActiveBtnId);
+  if (btn) { btn.classList.remove('recording'); btn.textContent = '🎤'; btn.title = 'Record voice message'; }
 }
 
 async function handleVoiceStop() {
-  const st = document.getElementById('voice-status');
+  const st = document.getElementById(voiceActiveStatusId);
   const groqKey = localStorage.getItem('groq_api_key');
 
   if (!groqKey) {
-    // No Groq key — append note to caption
-    st.textContent = '⚠️ Connect Groq API in ⚙️ Settings to transcribe voice to text';
-    setTimeout(() => { st.style.display = 'none'; }, 4000);
+    if (st) { st.textContent = '⚠️ Connect Groq API in ⚙️ Settings to transcribe voice'; st.style.display = ''; }
+    setTimeout(() => { if (st) st.style.display = 'none'; }, 4000);
     return;
   }
 
-  st.textContent = '⏳ Transcribing…';
+  if (st) { st.style.display = ''; st.textContent = '⏳ Transcribing…'; }
 
   const blob = new Blob(voiceChunks, { type: 'audio/webm' });
   const formData = new FormData();
@@ -7469,17 +7497,17 @@ async function handleVoiceStop() {
     const data = await res.json();
     const text = data.text?.trim();
     if (text) {
-      const caption = document.getElementById('feed-caption');
-      caption.value = caption.value ? caption.value + ' ' + text : text;
-      st.textContent = '✅ Transcribed!';
-      setTimeout(() => { st.style.display = 'none'; }, 2000);
+      const field = document.getElementById(voiceTargetFieldId);
+      if (field) field.value = field.value ? field.value + ' ' + text : text;
+      if (st) { st.textContent = '✅ Transcribed!'; }
+      setTimeout(() => { if (st) st.style.display = 'none'; }, 2000);
     } else {
-      st.textContent = '⚠️ Could not transcribe — try again';
+      if (st) st.textContent = '⚠️ Could not transcribe — try again';
     }
   } catch(e) {
     console.error('Transcription error:', e);
-    st.textContent = `❌ Transcription failed: ${e.message}`;
-    setTimeout(() => { st.style.display = 'none'; }, 4000);
+    if (st) { st.textContent = `❌ Transcription failed: ${e.message}`; }
+    setTimeout(() => { if (st) st.style.display = 'none'; }, 4000);
   }
 }
 
