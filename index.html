@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Katkuta Kitchen</title>
+  <title>Katkuta</title>
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -41,6 +41,24 @@
       --sh-md:        0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.05);
     }
 
+    /* ── DARK MODE ── */
+    [data-theme="dark"] {
+      --bg:           #0f1117;
+      --surface:      #1a1d27;
+      --surface-2:    #23263a;
+      --primary:      #52b788;
+      --primary-lt:   #74c69d;
+      --primary-bg:   #1a3329;
+      --text:         #e8e8e8;
+      --muted:        #9ca3af;
+      --border:       #2d3148;
+      --star:         #f59e0b;
+      --danger:       #f87171;
+      --danger-bg:    #2d1515;
+      --sh:           0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+      --sh-md:        0 4px 12px rgba(0,0,0,.3), 0 2px 4px rgba(0,0,0,.2);
+    }
+
     body {
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
@@ -74,7 +92,23 @@
       margin-right: 12px;
       white-space: nowrap;
       flex-shrink: 0;
+      cursor: pointer;
+      user-select: none;
     }
+    .nav-logo:hover { opacity: 0.8; }
+    .dark-toggle {
+      margin-left: auto;
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: var(--r-sm);
+      line-height: 1;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .dark-toggle:hover { background: var(--surface-2); }
     .nav-tabs {
       display: flex;
       gap: 2px;
@@ -1672,13 +1706,13 @@
 
 <div id="app-loader">
   <div class="loader-icon">🐥</div>
-  <div class="loader-text">Loading Katkuta Kitchen…</div>
+  <div class="loader-text">Loading Katkuta…</div>
 </div>
 
 <!-- ── NAV ── -->
 <nav>
   <div class="nav-inner">
-    <div class="nav-logo">🐥 Katkuta Kitchen<span class="sync-dot" id="sync-dot" title="Connected"></span></div>
+    <div class="nav-logo" onclick="showPage('dashboard')" title="Home">🐥 Katkuta<span class="sync-dot" id="sync-dot" title="Connected"></span></div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="showPage('dashboard')">🏠 Home</button>
       <button class="nav-tab" onclick="showPage('recipes')">Recipes</button>
@@ -1687,6 +1721,7 @@
       <button class="nav-tab" onclick="showPage('notes')">Notes & To-dos</button>
       <button class="nav-tab" onclick="showPage('events')">Events</button>
       <button class="nav-tab" onclick="showPage('profiles')">Profiles</button>
+      <button class="dark-toggle" onclick="toggleDark()" id="dark-toggle-btn" title="Toggle dark mode">🌙</button>
       <button class="nav-tab nav-settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
     </div>
   </div>
@@ -2570,6 +2605,25 @@
 <div class="toasts" id="toasts"></div>
 
 <script>
+// ── DARK MODE ─────────────────────────────────────────────────────────────────
+function initDarkMode() {
+  const saved = localStorage.getItem('dark_mode');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved !== null ? saved === 'true' : prefersDark;
+  setDark(isDark);
+}
+function setDark(on) {
+  document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light');
+  const btn = document.getElementById('dark-toggle-btn');
+  if (btn) btn.textContent = on ? '☀️' : '🌙';
+  localStorage.setItem('dark_mode', on ? 'true' : 'false');
+}
+function toggleDark() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  setDark(!isDark);
+}
+initDarkMode();
+
 // ── SUPABASE ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://wfxrlphtikjlrrjcbltc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Rzjg4VAa1H-DDmiAI1IWYA_SWSDq6gi';
@@ -6504,7 +6558,7 @@ async function sendTestNotif() {
 
   try {
     const payload = {
-      contents: { en: '🔔 Katkuta Kitchen — notifications are working!' },
+      contents: { en: '🔔 Katkuta — notifications are working!' },
       headings: { en: 'Test Notification' },
     };
     if (playerId) {
@@ -6648,7 +6702,7 @@ async function scheduleTodoNotification(todo) {
   const title   = `✅ Due today — ${todo.text}`;
   const message = todo.priority !== 'normal' ? `Priority: ${todo.priority}` : '';
 
-  return await scheduleOSNotification(title, message || 'Mark it done in Katkuta Kitchen!', remind);
+  return await scheduleOSNotification(title, message || 'Mark it done in Katkuta!', remind);
 }
 
 // ── PHOTO SEARCH (Pexels) ─────────────────────────────────────────────────────
