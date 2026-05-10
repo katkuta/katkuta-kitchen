@@ -2115,10 +2115,11 @@
   <div id="page-feed" class="page">
     <div class="page-header">
       <h1 class="page-title">📸 Memory Feed</h1>
+      <button class="btn btn-primary" onclick="toggleFeedCompose()">+ Add Memory</button>
     </div>
     <div class="feed-layout">
-      <!-- Compose -->
-      <div class="feed-compose">
+      <!-- Compose (hidden by default) -->
+      <div class="feed-compose" id="feed-compose-box" style="display:none;">
         <div>
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Photos (optional)</div>
           <div class="feed-photo-thumbs" id="feed-photo-thumbs">
@@ -2152,6 +2153,7 @@
         </div>
         <div class="feed-compose-foot">
           <span class="feed-compose-status" id="feed-compose-status"></span>
+          <button class="btn btn-secondary" onclick="toggleFeedCompose()">Cancel</button>
           <button class="btn btn-primary" onclick="addPost()">Post Memory ✨</button>
         </div>
       </div>
@@ -7163,6 +7165,14 @@ async function initFeedPage() {
   renderFeed();
 }
 
+function toggleFeedCompose() {
+  const box = document.getElementById('feed-compose-box');
+  if (!box) return;
+  const isOpen = box.style.display !== 'none';
+  box.style.display = isOpen ? 'none' : '';
+  if (!isOpen) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 async function loadPosts() {
   try {
     const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
@@ -7347,6 +7357,9 @@ async function addPost() {
   feedSelectedTags.clear();
   renderFeedTagSelector();
   statusEl.textContent = '';
+  // Collapse compose
+  const composeBox = document.getElementById('feed-compose-box');
+  if (composeBox) composeBox.style.display = 'none';
   renderFeed();
 }
 
@@ -7405,15 +7418,15 @@ function closePhotoModal() {
 }
 
 function relativeTime(epochMs) {
+  const date = new Date(epochMs);
+  const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const diff = Date.now() - epochMs;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1)  return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1)  return `Just now · ${dateStr}`;
+  if (mins < 60) return `${mins}m ago · ${dateStr}`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24)  return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7)  return `${days}d ago`;
-  return new Date(epochMs).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  if (hrs < 24)  return `Today · ${dateStr}`;
+  return dateStr;
 }
 
 async function renderDashOnThisDay() {
